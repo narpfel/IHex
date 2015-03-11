@@ -82,18 +82,18 @@ class IHex(object):
     def get_area(self, addr):
         for start, data in self.areas.iteritems():
             end = start + len(data)
-            if addr >= start and addr <= end:
+            if start <= addr <= end:
                 return start
 
-        return None
+        raise ValueError("No area contains address {:#x}.".format(addr))
 
     def insert_data(self, istart, idata):
         iend = istart + len(idata)
 
-        area = self.get_area(istart)
-        if area is None:
+        try:
+            area = self.get_area(istart)
+        except ValueError:
             self.areas[istart] = idata
-
         else:
             data = self.areas[area]
             # istart - iend + len(idata) + len(data)
