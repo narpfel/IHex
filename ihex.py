@@ -1,6 +1,12 @@
 import struct
 
 class IHex(object):
+    def __init__(self):
+        self.areas = {}
+        self.start = None
+        self.mode = 8
+        self.row_bytes = 16
+
     @classmethod
     def read(cls, lines):
         ihex = cls()
@@ -44,12 +50,6 @@ class IHex(object):
     def read_file(cls, fname):
         with open(fname) as f:
             return cls.read(f)
-
-    def __init__(self):
-        self.areas = {}
-        self.start = None
-        self.mode = 8
-        self.row_bytes = 16
 
     def set_row_bytes(self, row_bytes):
         """Set output hex file row width (bytes represented per row)."""
