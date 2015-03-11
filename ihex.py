@@ -126,15 +126,15 @@ class IHex(object):
 
         return (record_type, addr, data)
 
-    def make_line(self, type, addr, data):
-        line = struct.pack(">BHB", len(data), addr, type)
-        line += data
-        line += chr(self.calc_checksum(line))
-        #~ return ":" + line.encode("hex")
-        return ":" + line.encode("hex").upper() + "\r\n"
+    def make_line(self, record_type, addr, data):
+        line = struct.pack(">BHB", len(data), addr, record_type) + data
+        return ":{}{}\r\n".format(
+            line.encode("hex").upper(),
+            chr(self.calc_checksum(line)).encode("hex").upper()
+        )
 
     def write(self):
-        output = ""
+        output = []
 
         for start, data in sorted(self.areas.iteritems()):
             i = 0
@@ -148,37 +148,47 @@ class IHex(object):
 
                 if self.mode == 8:
                     addr = addr & 0xFFFF
-
                 elif self.mode == 16:
                     t = addr & 0xFFFF
                     newsegbase = (addr - t) >> 4
                     addr = t
 
                     if newsegbase != segbase:
-                        output += self.make_line(0x02, 0, struct.pack(">H", newsegbase))
+                        output.append(
+                            self.make_line(0x02, 0, struct.pack(">H", newsegbase))
+                        )
                         segbase = newsegbase
-
                 elif self.mode == 32:
                     newsegbase = addr >> 16
                     addr = addr & 0xFFFF
 
                     if newsegbase != segbase:
-                        output += self.make_line(0x04, 0, struct.pack(">H", newsegbase))
+                        output.append(
+                            self.make_line(0x04, 0, struct.pack(">H", newsegbase))
+                        )
                         segbase = newsegbase
 
-                output += self.make_line(0x00, addr, chunk)
+                output.append(self.make_line(0x00, addr, chunk))
 
                 i += self.row_bytes
                 start += self.row_bytes
 
         if self.start is not None:
             if self.mode == 16:
-                output += self.make_line(0x03, 0, struct.pack(">2H", self.start[0], self.start[1]))
+                output.append(
+                    self.make_line(
+                        0x03,
+                        0,
+                        struct.pack(">2H", self.start[0], self.start[1])
+                    )
+                )
             elif self.mode == 32:
-                output += self.make_line(0x05, 0, struct.pack(">I", self.start))
+                output.append(
+                    self.make_line(0x05, 0, struct.pack(">I", self.start))
+                )
 
-        output += self.make_line(0x01, 0, "")
-        return output
+        output.append(self.make_line(0x01, 0, ""))
+        return "".join(output)
 
     def write_file(self, fname):
         with open(fname, "w") as f:
