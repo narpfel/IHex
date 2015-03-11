@@ -42,10 +42,8 @@ class IHex(object):
 
     @classmethod
     def read_file(cls, fname):
-        f = open(fname, "r")
-        ihex = cls.read(f)
-        f.close()
-        return ihex
+        with open(fname) as f:
+            return cls.read(f)
 
     def __init__(self):
         self.areas = {}
@@ -191,6 +189,5 @@ class IHex(object):
         return output
 
     def write_file(self, fname):
-        f = open(fname, "w")
-        f.write(self.write())
-        f.close()
+        with open(fname, "w") as f:
+            f.write(self.write())
