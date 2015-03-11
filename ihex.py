@@ -105,26 +105,26 @@ class IHex(object):
 
     def parse_line(self, rawline):
         if rawline[0] != ":":
-            raise ValueError("Invalid line start character (%r)" % rawline[0])
+            raise ValueError(
+                "Invalid line start character {!r}".format(rawline[0])
+            )
 
         try:
             line = rawline[1:].decode("hex")
-        except:
-            raise ValueError("Invalid hex data")
+        except TypeError as err:
+            raise ValueError(
+                "Invalid hex data {!r}".format(rawline[1:])
+            )
 
-        length, addr, type = struct.unpack(">BHB", line[:4])
+        length, addr, record_type = struct.unpack(">BHB", line[:4])
 
         dataend = length + 4
         data = line[4:dataend]
 
-        #~ print line[dataend:dataend + 2], repr(line)
-        cs1 = ord(line[dataend])
-        cs2 = self.calc_checksum(line[:dataend])
-
-        if cs1 != cs2:
+        if ord(line[dataend]) != self.calc_checksum(line[:dataend]):
             raise ValueError("Checksums do not match")
 
-        return (type, addr, data)
+        return (record_type, addr, data)
 
     def make_line(self, type, addr, data):
         line = struct.pack(">BHB", len(data), addr, type)
