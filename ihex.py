@@ -14,33 +14,26 @@ class IHex(object):
         segbase = 0
         for line in lines:
             line = line.strip()
-            if not line: continue
+            if not line:
+                continue
 
             t, a, d = ihex.parse_line(line)
             if t == 0x00:
                 ihex.insert_data(segbase + a, d)
-
             elif t == 0x01:
                 break # Should we check for garbage after this?
-
             elif t == 0x02:
                 ihex.mode = 16
                 segbase = struct.unpack(">H", d[0:2])[0] << 4
-
             elif t == 0x03:
                 ihex.mode = 16
-
-                cs, ip = struct.unpack(">2H", d[0:2])
-                ihex.start = (cs, ip)
-
+                ihex.start = struct.unpack(">2H", d[0:2])
             elif t == 0x04:
                 ihex.mode = 32
                 segbase = struct.unpack(">H", d[0:2])[0] << 16
-
             elif t == 0x05:
                 ihex.mode = 32
                 ihex.start = struct.unpack(">I", d[0:4])[0]
-
             else:
                 raise ValueError("Invalid type byte")
 
