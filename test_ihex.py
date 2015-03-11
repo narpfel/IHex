@@ -14,7 +14,7 @@ class IHexTest(unittest.TestCase):
                 ':10002600363738396162636465666768696A6B6C1E\r\n' \
                 ':0E0036006D6E6F707172737475777678797A6B\r\n' \
                 ':00000001FF\r\n')
-        ihex.set_row_bytes(8)
+        ihex.row_bytes = 8
         self.assertEqual(ihex.write(),
                 ':080006004142434445464748CE\r\n' \
                 ':08000E00494A4B4C4D4E4F5086\r\n' \
@@ -25,7 +25,7 @@ class IHexTest(unittest.TestCase):
                 ':080036006D6E6F70717273743E\r\n' \
                 ':06003E0075777678797AEF\r\n' \
                 ':00000001FF\r\n')
-        ihex.set_row_bytes(32)
+        ihex.row_bytes = 32
         self.assertEqual(ihex.write(),
                 ':200006004142434445464748494A4B4C4D4E4F505152535455565758595A303132333435CC\r\n' \
                 ':1E002600363738396162636465666768696A6B6C6D6E6F707172737475777678797ABF\r\n' \

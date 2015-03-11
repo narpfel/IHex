@@ -24,22 +24,22 @@ class IHex(object):
                 break # Should we check for garbage after this?
 
             elif t == 0x02:
-                ihex.set_mode(16)
+                ihex.mode = 16
                 segbase = struct.unpack(">H", d[0:2])[0] << 4
 
             elif t == 0x03:
-                ihex.set_mode(16)
+                ihex.mode = 16
 
                 cs, ip = struct.unpack(">2H", d[0:2])
-                ihex.set_start((cs, ip))
+                ihex.start = (cs, ip)
 
             elif t == 0x04:
-                ihex.set_mode(32)
+                ihex.mode = 32
                 segbase = struct.unpack(">H", d[0:2])[0] << 16
 
             elif t == 0x05:
-                ihex.set_mode(32)
-                ihex.set_start(struct.unpack(">I", d[0:4])[0])
+                ihex.mode = 32
+                ihex.start = struct.unpack(">I", d[0:4])[0]
 
             else:
                 raise ValueError("Invalid type byte")
@@ -51,11 +51,16 @@ class IHex(object):
         with open(fname) as f:
             return cls.read(f)
 
-    def set_row_bytes(self, row_bytes):
+    @property
+    def row_bytes(self):
+        return self._row_bytes
+
+    @row_bytes.setter
+    def row_bytes(self, row_bytes):
         """Set output hex file row width (bytes represented per row)."""
         if row_bytes < 1 or row_bytes > 0xff:
             raise ValueError("Value out of range: (%r)" % row_bytes)
-        self.row_bytes = row_bytes
+        self._row_bytes = row_bytes
 
     def extract_data(self, start=None, end=None):
         if start is None:
@@ -80,12 +85,6 @@ class IHex(object):
                     result = result[:start] + data[start-addr:end-addr] + result[end:]
 
             return result
-
-    def set_start(self, start=None):
-        self.start = start
-
-    def set_mode(self, mode):
-        self.mode = mode
 
     def get_area(self, addr):
         for start, data in self.areas.iteritems():
