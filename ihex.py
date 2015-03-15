@@ -106,7 +106,7 @@ class IHex(object):
 
     def make_line(self, record_type, addr, data):
         line = struct.pack(">BHB", len(data), addr, record_type) + data
-        return ":{}{}\r\n".format(
+        return ":{}{}\n".format(
             line.encode("hex").upper(),
             chr(IHex.calc_checksum(line)).encode("hex").upper()
         )
