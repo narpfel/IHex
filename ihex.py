@@ -17,7 +17,7 @@ class IHex(object):
             if not line:
                 continue
 
-            t, a, d = ihex.parse_line(line)
+            t, a, d = IHex.parse_line(line)
             if t == 0x00:
                 ihex.insert_data(segbase + a, d)
             elif t == 0x01:
@@ -99,11 +99,13 @@ class IHex(object):
             # istart - iend + len(idata) + len(data)
             self.areas[area] = data[:istart-area] + idata + data[iend-area:]
 
-    def calc_checksum(self, bytes):
+    @staticmethod
+    def calc_checksum(bytes):
         total = sum(map(ord, bytes))
         return (-total) & 0xFF
 
-    def parse_line(self, rawline):
+    @staticmethod
+    def parse_line(rawline):
         if rawline[0] != ":":
             raise ValueError(
                 "Invalid line start character {!r}".format(rawline[0])
@@ -121,7 +123,7 @@ class IHex(object):
         dataend = length + 4
         data = line[4:dataend]
 
-        if ord(line[dataend]) != self.calc_checksum(line[:dataend]):
+        if ord(line[dataend]) != IHex.calc_checksum(line[:dataend]):
             raise ValueError("Checksums do not match")
 
         return (record_type, addr, data)
@@ -130,7 +132,7 @@ class IHex(object):
         line = struct.pack(">BHB", len(data), addr, record_type) + data
         return ":{}{}\r\n".format(
             line.encode("hex").upper(),
-            chr(self.calc_checksum(line)).encode("hex").upper()
+            chr(IHex.calc_checksum(line)).encode("hex").upper()
         )
 
     def write(self):
