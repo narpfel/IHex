@@ -55,30 +55,6 @@ class IHex(object):
             raise ValueError("Value out of range: (%r)" % row_bytes)
         self._row_bytes = row_bytes
 
-    def extract_data(self, start=None, end=None):
-        if start is None:
-            start = 0
-
-        if end is None:
-            end = 0
-            result = ""
-
-            for addr, data in self.areas.iteritems():
-                if addr >= start:
-                    end = max(end, addr + len(data))
-                    result = result[:start] + data[start-addr:end-addr] + result[end:]
-
-            return result
-
-        else:
-            result = ""
-
-            for addr, data in self.areas.iteritems():
-                if addr >= start and addr < end:
-                    result = result[:start] + data[start-addr:end-addr] + result[end:]
-
-            return result
-
     def get_area(self, addr):
         for start, data in self.areas.iteritems():
             end = start + len(data)
