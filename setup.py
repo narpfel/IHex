@@ -4,7 +4,9 @@ setup(
   name = "IHex",
   version = "0.1.4",
   py_modules = ["ihex"],
-
+  install_requires=[
+    "six",
+  ],
   author = "Kier Davis",
   author_email = "kierdavis@gmail.com",
   description = "A Python library for reading and writing Intel Hex files",

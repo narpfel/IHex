@@ -3,7 +3,7 @@ from pytest import fixture, raises, mark
 from ihex import IHex
 
 
-TEST_DATA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuwvxyz'
+TEST_DATA = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuwvxyz"
 
 TEST_OUTPUTS = {
     16: (
@@ -39,7 +39,7 @@ def ihex():
     return ihex
 
 
-@fixture(params=TEST_OUTPUTS.values(), ids=TEST_OUTPUTS.keys())
+@fixture(params=list(TEST_OUTPUTS.values()), ids=list(TEST_OUTPUTS.keys()))
 def test_hex_file(tmpdir, request):
     f = tmpdir.join("test.hex")
     f.write(request.param)
@@ -52,8 +52,8 @@ def test_hex_filename(test_hex_file):
 
 
 parametrize_with_test_outputs = mark.parametrize(
-    "row_bytes, expected_output", TEST_OUTPUTS.items(),
-    ids=TEST_OUTPUTS.keys()
+    "row_bytes, expected_output", list(TEST_OUTPUTS.items()),
+    ids=list(TEST_OUTPUTS.keys())
 )
 
 
@@ -85,7 +85,7 @@ def test_get_area(ihex):
 
 
 def test_insert_data_into_existing_area(ihex):
-    insert_data = "foo"
+    insert_data = b"foo"
     area_start = ihex.get_area(42)
     ihex.insert_data(42, insert_data)
     expected = (
@@ -97,7 +97,7 @@ def test_insert_data_into_existing_area(ihex):
 
 
 def test_insert_data_into_new_area(ihex):
-    insert_data = "foo"
+    insert_data = b"foo"
     ihex.insert_data(0x4242, insert_data)
     assert ihex.get_area(0x4244) == 0x4242
     assert ihex.areas[0x4242] == insert_data
@@ -125,16 +125,16 @@ def do_read_asserts(ihex):
 
 
 def test_calc_checksum(ihex):
-    assert ihex.calc_checksum("foobar") == 0x87
-    assert IHex.calc_checksum("foobar") == 0x87
-    assert IHex.calc_checksum("") == 0
-    assert IHex.calc_checksum("\0") == 0
-    assert IHex.calc_checksum("\xff") == 1
+    assert ihex.calc_checksum(b"foobar") == 0x87
+    assert IHex.calc_checksum(b"foobar") == 0x87
+    assert IHex.calc_checksum(b"") == 0
+    assert IHex.calc_checksum(b"\0") == 0
+    assert IHex.calc_checksum(b"\xff") == 1
 
 
 def test_parse_line():
     foo_line = ":03424200666F6F35"
-    assert IHex.parse_line(foo_line) == (0x00, 0x4242, "foo")
+    assert IHex.parse_line(foo_line) == (0x00, 0x4242, b"foo")
 
     long_line = TEST_OUTPUTS[32].splitlines()[0]
     data = TEST_DATA[:32]

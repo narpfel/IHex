@@ -1,4 +1,9 @@
 import struct
+from codecs import encode, decode
+
+from six import int2byte, byte2int, indexbytes, iteritems, PY2
+from six.moves import map
+
 
 class IHex(object):
     def __init__(self):
@@ -56,7 +61,8 @@ class IHex(object):
         self._row_bytes = row_bytes
 
     def get_area(self, addr):
-        for start, data in self.areas.iteritems():
+        # FIXME: py2
+        for start, data in iteritems(self.areas):
             end = start + len(data)
             if start <= addr <= end:
                 return start
@@ -77,7 +83,10 @@ class IHex(object):
 
     @staticmethod
     def calc_checksum(bytes):
-        total = sum(map(ord, bytes))
+        # FIXME: py2
+        if PY2:
+            bytes = map(ord, bytes)
+        total = sum(bytes)
         return (-total) & 0xFF
 
     @staticmethod
@@ -88,7 +97,9 @@ class IHex(object):
             )
 
         try:
-            line = rawline[1:].decode("hex")
+            # FIXME: pypy3
+            # The `encode` call is only necessary on pypy3, i. e. Python 3.2
+            line = decode(rawline[1:].encode("ascii"), "hex_codec")
         except TypeError as err:
             raise ValueError(
                 "Invalid hex data {!r}".format(rawline[1:])
@@ -99,7 +110,8 @@ class IHex(object):
         dataend = length + 4
         data = line[4:dataend]
 
-        if ord(line[dataend]) != IHex.calc_checksum(line[:dataend]):
+        # FIXME: py2
+        if indexbytes(line, dataend) != IHex.calc_checksum(line[:dataend]):
             raise ValueError("Checksums do not match")
 
         return (record_type, addr, data)
@@ -107,14 +119,18 @@ class IHex(object):
     def make_line(self, record_type, addr, data):
         line = struct.pack(">BHB", len(data), addr, record_type) + data
         return ":{}{}\n".format(
-            line.encode("hex").upper(),
-            chr(IHex.calc_checksum(line)).encode("hex").upper()
+            encode(line, "hex_codec").decode("ascii").upper(),
+            encode(
+                # FIXME: py2
+                int2byte(IHex.calc_checksum(line)), "hex_codec"
+            ).decode("ascii").upper()
         )
 
     def write(self):
         output = []
 
-        for start, data in sorted(self.areas.iteritems()):
+        # FIXME: py2
+        for start, data in sorted(iteritems(self.areas)):
             i = 0
             segbase = 0
 
@@ -165,7 +181,7 @@ class IHex(object):
                     self.make_line(0x05, 0, struct.pack(">I", self.start))
                 )
 
-        output.append(self.make_line(0x01, 0, ""))
+        output.append(self.make_line(0x01, 0, b""))
         return "".join(output)
 
     def write_file(self, fname):
