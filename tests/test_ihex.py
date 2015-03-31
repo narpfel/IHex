@@ -40,15 +40,20 @@ def ihex():
 
 
 @fixture(params=list(TEST_OUTPUTS.values()), ids=list(TEST_OUTPUTS.keys()))
-def test_hex_file(tmpdir, request):
+def test_hex(tmpdir, request):
     f = tmpdir.join("test.hex")
     f.write(request.param)
-    return f.open()
+    return f
 
 
 @fixture
-def test_hex_filename(test_hex_file):
-    return test_hex_file.name
+def test_hex_file(test_hex):
+    return test_hex.open()
+
+
+@fixture
+def test_hex_filename(test_hex):
+    return test_hex.strpath
 
 
 parametrize_with_test_outputs = mark.parametrize(
