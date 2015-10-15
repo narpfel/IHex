@@ -1,5 +1,5 @@
+from binascii import hexlify, unhexlify
 import struct
-from codecs import encode, decode
 
 from six import int2byte, byte2int, indexbytes, iteritems, PY2
 from six.moves import map
@@ -99,7 +99,7 @@ class IHex(object):
         try:
             # FIXME: pypy3
             # The `encode` call is only necessary on pypy3, i. e. Python 3.2
-            line = decode(rawline[1:].encode("ascii"), "hex_codec")
+            line = unhexlify(rawline[1:].encode("ascii"))
         except TypeError as err:
             raise ValueError(
                 "Invalid hex data {!r}".format(rawline[1:])
@@ -119,10 +119,10 @@ class IHex(object):
     def make_line(self, record_type, addr, data):
         line = struct.pack(">BHB", len(data), addr, record_type) + data
         return ":{}{}\n".format(
-            encode(line, "hex_codec").decode("ascii").upper(),
-            encode(
+            hexlify(line).decode("ascii").upper(),
+            hexlify(
                 # FIXME: py2
-                int2byte(IHex.calc_checksum(line)), "hex_codec"
+                int2byte(IHex.calc_checksum(line))
             ).decode("ascii").upper()
         )
 
