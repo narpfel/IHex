@@ -39,7 +39,7 @@ def ihex():
     return ihex
 
 
-@fixture(params=list(TEST_OUTPUTS.values()), ids=list(TEST_OUTPUTS.keys()))
+@fixture(params=list(TEST_OUTPUTS.values()), ids=list(str(k) for k in TEST_OUTPUTS.keys()))
 def test_hex(tmpdir, request):
     f = tmpdir.join("test.hex")
     f.write(request.param)
@@ -58,13 +58,13 @@ def test_hex_filename(test_hex):
 
 parametrize_with_test_outputs = mark.parametrize(
     "row_bytes, expected_output", list(TEST_OUTPUTS.items()),
-    ids=list(TEST_OUTPUTS.keys())
+    ids=list(str(k) for k in TEST_OUTPUTS.keys())
 )
 
 
 @parametrize_with_test_outputs
 def test_row_bytes(ihex, row_bytes, expected_output):
-    ihex.row_bytes = row_bytes
+    ihex.row_bytes = int(row_bytes)
     assert ihex.write() == expected_output
 
 
@@ -168,7 +168,7 @@ def test_parse_line_with_invalid_chracter():
 def test_write_file(tmpdir, ihex, row_bytes, expected_output):
     test_file = tmpdir.join("test.hex")
 
-    ihex.row_bytes = row_bytes
+    ihex.row_bytes = int(row_bytes)
     ihex.write_file(test_file.strpath)
     assert test_file.read() == expected_output
 
