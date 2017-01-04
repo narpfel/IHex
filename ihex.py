@@ -45,8 +45,8 @@ class IHex(object):
         return ihex
 
     @classmethod
-    def read_file(cls, fname):
-        with open(fname) as f:
+    def read_file(cls, filename):
+        with open(filename) as f:
             return cls.read(f)
 
     @property
@@ -182,6 +182,6 @@ class IHex(object):
         output.append(self.make_line(0x01, 0, b""))
         return "".join(output)
 
-    def write_file(self, fname):
-        with open(fname, "w") as f:
+    def write_file(self, filename):
+        with open(filename, "w") as f:
             f.write(self.write())
