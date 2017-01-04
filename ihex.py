@@ -97,9 +97,7 @@ class IHex(object):
             )
 
         try:
-            # FIXME: pypy3
-            # The `encode` call is only necessary on pypy3, i. e. Python 3.2
-            line = unhexlify(rawline[1:].encode("ascii"))
+            line = unhexlify(rawline[1:])
         except TypeError as err:
             raise ValueError(
                 "Invalid hex data {!r}".format(rawline[1:])
